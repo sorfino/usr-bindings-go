@@ -10,7 +10,7 @@ import (
 	flatbuffers "github.com/google/flatbuffers/go"
 )
 
-//go:generate flatc --go --gen-onefile --go-namespace kvsprotocol -o internal/kvsprotocol --gen-object-api ../../ubnified-sdk-runtime/flatbuffers/kvs.fbs
+//go:generate flatc --go --gen-onefile --go-namespace kvsprotocol -o internal/kvsprotocol --gen-object-api ../../unified-sdk-runtime/flatbuffers/kvs.fbs
 func TestNewClient(t *testing.T) {
 	client, err := kvsbinding.NewClient("test")
 	if err != nil {

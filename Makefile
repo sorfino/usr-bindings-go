@@ -26,3 +26,4 @@ all: init tidy format vet staticcheck test
 init:
 	@echo "=> Initializing project"
 	@git submodule init
+	@go generate ./...
