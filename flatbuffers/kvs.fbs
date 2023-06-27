@@ -1,0 +1,58 @@
+/*
+    This file contains all the data structures used by the key-value store unified SDK runtime.
+
+    In order to generate language specific implementations, the flatc compiler must be used.
+    
+    For example, to generate the C++ implementation, run the following command:
+    flatc --cpp --gen-object-api --cpp-std c++11 kvs.fbs
+
+    To generate the Python implementation:
+    flatc --python kvs.fbs
+
+    For more information, see https://google.github.io/flatbuffers/flatbuffers_guide_using_schema_compiler.html
+*/
+
+namespace UnifiedSdkRuntime.Kvs;
+
+// Item represents an item in the key-value store.
+table Item {
+    key:string (required);
+    value:[ubyte];
+    version:int32;
+    timestamp:uint64;
+}
+
+// Method represents the operation to be performed on the key-value store.
+enum Method : byte {
+    GET = 0,
+    SET = 1,
+    DELETE = 2,
+}
+
+enum ErrorCode : byte {
+    OK = 0,
+    NOT_FOUND = 1,
+    STALE_VALUE = 2,
+    OVER_QUOTA = 3,
+    TRANSPORT_ERROR = 10,
+    TIMEOUT = 11,
+    SERVICE_ERROR = 100,
+    OTHER = 101,
+}
+
+table Error {
+    code:ErrorCode;
+    message:string;
+}
+
+// The request to be sent to the service.
+table Request {
+    keys:[Item];
+}
+
+// The Response received from the service. It can contain a collection of items or an error.
+// TODO: maybe this can be better expressed with an union type?
+table Response {
+    items:[Item];
+    error:Error;
+}
