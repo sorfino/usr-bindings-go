@@ -18,3 +18,11 @@ GITHUB_TOKEN ?= $(shell gh auth token 2>/dev/null)
 run:
 	@echo "=> Running application locally"
 	@go run cmd/server/*.go
+
+.PHONY: all
+all: init tidy format vet staticcheck test
+
+.PHONY: init
+init:
+	@echo "=> Initializing project"
+	@git submodule init
