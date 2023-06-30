@@ -3,12 +3,12 @@ package kvsbinding
 /*
 #include "unified_sdk_runtime/kvs.h"
 
-extern int go_callback(int, const uint8_t*, size_t);
+extern int go_callback(const uint8_t*, size_t, void*, int);
 
-typedef int (*gateway_function_t)(int, const uint8_t*, size_t);
-int gateway_function(int fd, const uint8_t* ptr, size_t length)
+typedef int (*gateway_function_t)(const uint8_t*, size_t, void*, int);
+int gateway_function(const uint8_t* ptr, size_t length, void *user_data, int fd)
 {
-    return go_callback(fd, ptr, length);
+    return go_callback(ptr, length, user_data, fd);
 }
 */
 import "C"
@@ -16,29 +16,32 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github/mercadolibre/go-bindings/pkg/kvsbinding/internal/pointer"
 	"syscall"
 	"time"
 	"unsafe"
 )
+
+//go:generate flatc --go --gen-onefile --go-namespace protocol -o protocol --gen-object-api ../../build/flatbuffers/kvs.fbs
 
 // DefaultTimeout is the timeout for the USR call, not for the call to the underlying service.
 const DefaultTimeout = time.Second * 10
 
 type Client struct {
 	// fd is the file descriptor of this client.
-	fd C.int
+	h *C.Client
 }
 
 func NewClient(container string) (*Client, error) {
 	name := C.CString(container)
 	defer C.free(unsafe.Pointer(name))
 
-	fd := C.client_create(name)
-	if fd < 0 {
+	h := C.client_create(name)
+	if h == nil {
 		return nil, errors.New("failure to create client")
 	}
 
-	return &Client{fd: fd}, nil
+	return &Client{h: h}, nil
 }
 
 // Call will call the underlying USR client and wait for the response.
@@ -53,11 +56,6 @@ func (c *Client) Call(ctx context.Context, operation uint32, buffer []byte) ([]b
 	response := make(chan []byte, 1)
 	defer close(response)
 
-	registerCallback(int(c.fd), func(fd int, buffer []byte) int {
-		response <- buffer
-		return 0
-	})
-
 	// get a pointer to the first item of the slice.
 	ptr := (*C.uchar)(unsafe.SliceData(buffer))
 	length := C.size_t(len(buffer))
@@ -65,8 +63,11 @@ func (c *Client) Call(ctx context.Context, operation uint32, buffer []byte) ([]b
 	// convert the callback function to a C function pointer.
 	cb := C.gateway_function_t(C.gateway_function)
 
-	// call the USR.
-	errno := C.client_call(c.fd, operation, ptr, length, cb)
+	userData := pointer.Save(response)
+	defer pointer.Unref(userData)
+
+	// call the runtime.
+	errno := C.client_call(c.h, operation, ptr, length, userData, cb)
 	if errno > 0 {
 		return nil, fmt.Errorf("failure to call client: %w", syscall.Errno(errno))
 	}
@@ -81,7 +82,7 @@ func (c *Client) Call(ctx context.Context, operation uint32, buffer []byte) ([]b
 }
 
 func (c *Client) Close() error {
-	errno := C.client_close(c.fd)
+	errno := C.client_close(c.h)
 	if errno > 0 {
 		return fmt.Errorf("failure to close client: %w", syscall.Errno(errno))
 	}

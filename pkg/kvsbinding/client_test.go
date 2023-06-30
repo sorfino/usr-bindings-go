@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"context"
 	"github/mercadolibre/go-bindings/pkg/kvsbinding"
-	"github/mercadolibre/go-bindings/pkg/kvsbinding/internal/kvsprotocol"
+	"github/mercadolibre/go-bindings/pkg/kvsbinding/protocol"
 	"testing"
 
 	flatbuffers "github.com/google/flatbuffers/go"
 )
 
-//go:generate flatc --go --gen-onefile --go-namespace kvsprotocol -o internal/kvsprotocol --gen-object-api ../../unified-sdk-runtime/flatbuffers/kvs.fbs
 func TestNewClient(t *testing.T) {
 	client, err := kvsbinding.NewClient("test")
 	if err != nil {
@@ -19,17 +18,17 @@ func TestNewClient(t *testing.T) {
 
 	defer client.Close()
 	fb := flatbuffers.NewBuilder(0)
-	r := kvsprotocol.RequestT{
-		Keys: []*kvsprotocol.ItemT{{Key: "a_key"}},
+	r := protocol.RequestT{
+		Keys: []*protocol.ItemT{{Key: "a_key"}},
 	}
 	fb.Finish(r.Pack(fb))
 
-	root, err := client.Call(context.Background(), uint32(kvsprotocol.MethodGET), fb.FinishedBytes())
+	root, err := client.Call(context.Background(), uint32(protocol.MethodGET), fb.FinishedBytes())
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	res := kvsprotocol.GetRootAsResponse(root, 0)
+	res := protocol.GetRootAsResponse(root, 0)
 	response := res.UnPack()
 
 	if response.Error != nil {
