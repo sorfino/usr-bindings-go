@@ -7,14 +7,16 @@ package kvsbinding
 */
 import "C"
 import (
-	"github/mercadolibre/go-bindings/pkg/kvsbinding/internal/pointer"
+	"runtime/cgo"
 	"unsafe"
 )
 
 //export go_callback
 func go_callback(ptr *C.uchar, length C.ulong, userData *C.void, errno C.int) {
 	r := C.GoBytes(unsafe.Pointer(ptr), C.int(length))
-	ch := pointer.Restore(unsafe.Pointer(userData)).(chan []byte)
+	h := *(*cgo.Handle)(unsafe.Pointer(userData))
+	ch := h.Value().(chan []byte)
+
 	// send the response to the channel.
 	ch <- r
 }

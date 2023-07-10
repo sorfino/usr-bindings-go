@@ -16,7 +16,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github/mercadolibre/go-bindings/pkg/kvsbinding/internal/pointer"
+	"runtime/cgo"
 	"syscall"
 	"time"
 	"unsafe"
@@ -46,7 +46,7 @@ func NewClient(container string) (*Client, error) {
 
 // Call will call the underlying USR client and wait for the response.
 // The response contains the raw bytes of the flatbuffer in question, depending on the operation type.
-// ptr cannot be nil or empty, if that is the case, the function will panic.
+// buffer cannot be nil or empty, if that is the case, the function will panic.
 //
 // This implementation is rudementary and should be improved for a first release.
 func (c *Client) Call(ctx context.Context, operation uint32, buffer []byte) ([]byte, error) {
@@ -63,11 +63,11 @@ func (c *Client) Call(ctx context.Context, operation uint32, buffer []byte) ([]b
 	// convert the callback function to a C function pointer.
 	cb := C.gateway_function_t(C.gateway_function)
 
-	userData := pointer.Save(response)
-	defer pointer.Unref(userData)
+	userData := cgo.NewHandle(response)
+	defer userData.Delete()
 
 	// call the runtime.
-	errno := C.client_call(c.h, operation, ptr, length, userData, cb)
+	errno := C.client_call(c.h, operation, ptr, length, unsafe.Pointer(&userData), cb)
 	if errno > 0 {
 		return nil, fmt.Errorf("failure to call client: %w", syscall.Errno(errno))
 	}
