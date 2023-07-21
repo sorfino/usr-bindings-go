@@ -28,7 +28,7 @@ import (
 const DefaultTimeout = time.Second * 10
 
 type Client struct {
-	// fd is the file descriptor of this client.
+	// h is the handler to the client.
 	h *C.Client
 }
 
