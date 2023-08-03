@@ -3,8 +3,9 @@
 package protocol
 
 import (
-	flatbuffers "github.com/google/flatbuffers/go"
 	"strconv"
+
+	flatbuffers "github.com/google/flatbuffers/go"
 )
 
 type Method int8
@@ -77,9 +78,9 @@ func (v ErrorCode) String() string {
 }
 
 type ItemT struct {
-	Key string `json:"key"`
-	Value []byte `json:"value"`
-	Version int32 `json:"version"`
+	Key       string `json:"key"`
+	Value     []byte `json:"value"`
+	Version   int32  `json:"version"`
 	Timestamp uint64 `json:"timestamp"`
 }
 
@@ -241,9 +242,10 @@ func ItemAddTimestamp(builder *flatbuffers.Builder, timestamp uint64) {
 func ItemEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
+
 type ErrorT struct {
-	Code ErrorCode `json:"code"`
-	Message string `json:"message"`
+	Code    ErrorCode `json:"code"`
+	Message string    `json:"message"`
 }
 
 func (t *ErrorT) Pack(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
@@ -341,6 +343,7 @@ func ErrorAddMessage(builder *flatbuffers.Builder, message flatbuffers.UOffsetT)
 func ErrorEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
+
 type RequestT struct {
 	Keys []*ItemT `json:"keys"`
 }
@@ -453,9 +456,10 @@ func RequestStartKeysVector(builder *flatbuffers.Builder, numElems int) flatbuff
 func RequestEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
+
 type ResponseT struct {
 	Items []*ItemT `json:"items"`
-	Error *ErrorT `json:"error"`
+	Error *ErrorT  `json:"error"`
 }
 
 func (t *ResponseT) Pack(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
