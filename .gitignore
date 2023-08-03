@@ -29,4 +29,4 @@ go.work
 *.vsix
 
 Makefile.common
-lib/*
+lib/lib*
