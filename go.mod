@@ -1,4 +1,4 @@
-module github/sorfino/usr-bindings-go
+module github.com/sorfino/usr-bindings-go
 
 go 1.20
 
