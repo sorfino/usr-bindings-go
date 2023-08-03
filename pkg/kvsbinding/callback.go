@@ -14,4 +14,5 @@ func go_callback(ptr *C.uchar, length C.ulong, userData *C.void, errno C.int) {
 
 	// send the response to the channel.
 	ch <- r
+	close(ch)
 }

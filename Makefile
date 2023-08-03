@@ -20,7 +20,12 @@ run:
 	@go run cmd/server/*.go
 
 .PHONY: all
-all: init tidy format vet staticcheck test
+all: generate tidy format vet staticcheck test
+
+.PHONY: generate
+generate: init
+	@echo "=> Running go generate"
+	@go generate ./...
 
 .PHONY: init
 init:

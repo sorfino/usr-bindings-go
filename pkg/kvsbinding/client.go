@@ -1,7 +1,7 @@
 package kvsbinding
 
 /*
-#cgo CFLAGS: -I../../build/include
+#cgo CFLAGS: -I../../include
 #cgo LDFLAGS: -L../../lib -lusr_kvs -Wl,-rpath,../../lib
 #include "unified_sdk_runtime/kvs.h"
 
@@ -24,6 +24,8 @@ import (
 )
 
 //go:generate flatc --go --gen-onefile --go-namespace protocol -o protocol --gen-object-api ../../build/flatbuffers/kvs.fbs
+
+//go:generate cp -R ../../build/include/ ../../include
 
 // DefaultTimeout is the timeout for the USR call, not for the call to the underlying service.
 const DefaultTimeout = time.Second * 10
@@ -55,7 +57,6 @@ func (c *Client) Call(ctx context.Context, operation uint32, buffer []byte) ([]b
 	defer cancel()
 
 	response := make(chan []byte, 1)
-	defer close(response)
 
 	// get a pointer to the first item of the slice.
 	ptr := (*C.uchar)(unsafe.SliceData(buffer))
