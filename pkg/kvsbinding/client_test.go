@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github/sorfino/usr-bindings-go/pkg/kvsbinding"
-	"github/sorfino/usr-bindings-go/pkg/kvsbinding/protocol"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/sorfino/usr-bindings-go/pkg/kvsbinding"
+	"github.com/sorfino/usr-bindings-go/pkg/kvsbinding/protocol"
 
 	flatbuffers "github.com/google/flatbuffers/go"
 )
