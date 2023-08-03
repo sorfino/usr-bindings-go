@@ -1,10 +1,5 @@
 package kvsbinding
 
-/*
-#cgo CFLAGS: -I../../build/include
-#cgo LDFLAGS: -L../../lib -lusr_kvs -Wl,-rpath,../../lib
-#include "unified_sdk_runtime/kvs.h"
-*/
 import "C"
 import (
 	"runtime/cgo"

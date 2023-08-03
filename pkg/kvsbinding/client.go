@@ -1,6 +1,8 @@
 package kvsbinding
 
 /*
+#cgo CFLAGS: -I../../build/include
+#cgo LDFLAGS: -L../../lib -lusr_kvs -Wl,-rpath,../../lib
 #include "unified_sdk_runtime/kvs.h"
 
 extern int go_callback(const uint8_t*, size_t, void*, int);
@@ -14,7 +16,6 @@ int gateway_function(const uint8_t* ptr, size_t length, void *user_data, int fd)
 import "C"
 import (
 	"context"
-	"errors"
 	"fmt"
 	"runtime/cgo"
 	"syscall"
@@ -29,16 +30,16 @@ const DefaultTimeout = time.Second * 10
 
 type Client struct {
 	// h is the handler to the client.
-	h *C.Client
+	h *C.ClientHandle
 }
 
 func NewClient(container string) (*Client, error) {
 	name := C.CString(container)
 	defer C.free(unsafe.Pointer(name))
 
-	h := C.client_create(name)
+	h, err := C.client_create(name)
 	if h == nil {
-		return nil, errors.New("failure to create client")
+		return nil, fmt.Errorf("failure to create client: %w", err)
 	}
 
 	return &Client{h: h}, nil
