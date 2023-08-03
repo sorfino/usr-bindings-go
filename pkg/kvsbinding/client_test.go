@@ -8,6 +8,7 @@ import (
 	"github/mercadolibre/go-bindings/pkg/kvsbinding/protocol"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	flatbuffers "github.com/google/flatbuffers/go"
@@ -16,21 +17,20 @@ import (
 const (
 	container = "test"
 	key       = "a_key"
-	value     = `{"greetings":"ciao ragazzi!!"}`
 )
 
 func TestNewClient(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.Handle(fmt.Sprintf("/%s/%s", container, key), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(value))
+		w.Write([]byte(key))
 	}))
 
 	server := httptest.NewServer(mux)
 	defer server.Close()
 
-	t.Setenv("KEY_VALUE_STORE_TEST_END_POINT_READ", server.URL)
-	client, err := kvsbinding.NewClient("test")
+	t.Setenv("KEY_VALUE_STORE_"+strings.ToUpper(container)+"_END_POINT_READ", server.URL)
+	client, err := kvsbinding.NewClient(container)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +38,7 @@ func TestNewClient(t *testing.T) {
 	defer client.Close()
 	fb := flatbuffers.NewBuilder(0)
 	r := protocol.RequestT{
-		Keys: []*protocol.ItemT{{Key: "a_key"}},
+		Keys: []*protocol.ItemT{{Key: key}},
 	}
 	fb.Finish(r.Pack(fb))
 
@@ -58,7 +58,7 @@ func TestNewClient(t *testing.T) {
 		t.Fatalf("expected 1 item, got %d", len(response.Items))
 	}
 
-	if !bytes.Equal([]byte(value), response.Items[0].Value) {
-		t.Fatalf("expected %s, got %s", value, string(response.Items[0].Value))
+	if !bytes.Equal([]byte(key), response.Items[0].Value) {
+		t.Fatalf("expected %s, got %s", key, string(response.Items[0].Value))
 	}
 }

@@ -1,4 +1,4 @@
-module github/mercadolibre/go-bindings
+module github/sorfino/usr-bindings-go
 
 go 1.20
 
