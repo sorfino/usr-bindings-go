@@ -2,7 +2,7 @@ package kvsbinding
 
 /*
 #cgo CFLAGS: -I../../include
-#cgo LDFLAGS: -L../../lib -lusr_kvs -Wl,-rpath,../../lib
+#cgo LDFLAGS: -L../../lib -lusr_kvs
 #include "unified_sdk_runtime/kvs.h"
 
 extern int go_callback(const uint8_t*, size_t, void*, int);
@@ -23,8 +23,8 @@ import (
 	"unsafe"
 )
 
+// -Wl,-rpath=,.
 //go:generate flatc --go --gen-onefile --go-namespace protocol -o protocol --gen-object-api ../../build/flatbuffers/kvs.fbs
-
 //go:generate cp -R ../../build/include/ ../../include
 
 // DefaultTimeout is the timeout for the USR call, not for the call to the underlying service.
